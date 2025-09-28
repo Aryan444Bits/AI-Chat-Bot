@@ -1,4 +1,6 @@
-const {GoogleGenAI} = require('@google/genai')
+const {GoogleGenAI} = require('@google/genai');
+const { config } = require('dotenv');
+const { response } = require('express');
 
 
 
@@ -17,6 +19,21 @@ async function generateResponse(content){
 }
 
 
+async function generateVector(content){
+
+    const response = await ai.models.embedContent({
+        model:"gemini-embedding-001",
+        contents:content,
+        config:{
+            outputDimensionality: 768
+        }
+    })
+    return response.embeddings[0].values
+}
+
+
+
 module.exports = {
-    generateResponse
+    generateResponse,
+    generateVector
 }
