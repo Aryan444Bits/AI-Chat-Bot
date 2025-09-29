@@ -164,6 +164,8 @@ Because “phone” ≈ “mobile”, vectors close hote hain → AI recalls old
 -> and wo apni long term memory ka usse tabhi krega jab user usser usse koi aisa question puche aur wo uske long term memory se related ho
 
 
+-> in mets data we define the properties if the data like uss data ke andr aur kaun kaun se features hai like kiska data h, use data ki id kya h, and wo data kya h akhir.
+
 
 RAG (Retrival Agumented Generation) :
 
