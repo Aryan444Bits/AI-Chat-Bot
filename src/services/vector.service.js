@@ -22,7 +22,7 @@ async function queryMemory({ queryVector, limit=3, metadata}){
     const data = await AIChatBot.query({
         vector:queryVector,
         topK:limit,
-        filter:metadata ? {metadata} : undefined,
+        filter:metadata ? metadata : undefined,
         includeMetadata:true
     })
 

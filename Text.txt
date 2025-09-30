@@ -190,3 +190,7 @@ Example: It finds past knowledge about “Express”, “backend framework”, �
 4> Generation step →
 
 The LLM uses your query + retrieved knowledge to generate a better, context-aware answer.
+
+-------------------------------------------------------------------------
+
+-> when we haave two different task then we can easily merge both task to make code optimised and generate output easily and fast
