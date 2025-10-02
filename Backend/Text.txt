@@ -194,3 +194,7 @@ The LLM uses your query + retrieved knowledge to generate a better, context-awar
 -------------------------------------------------------------------------
 
 -> when we haave two different task then we can easily merge both task to make code optimised and generate output easily and fast
+
+
+
+

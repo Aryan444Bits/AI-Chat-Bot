@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/form.css';
+import axios from 'axios';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -9,15 +10,33 @@ const Register = () => {
     email: '',
     password: '',
   });
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log('Register form submitted:', formData);
-    // You can add your API call here to register the user
+    setSubmitting(true);
+    try {
+                  const response = await axios.post('http://localhost:3000/api/auth/register', {
+        email: formData.email,
+        fullName: {
+          firstName: formData.firstname,
+          lastName: formData.lastname,
+        },
+        password: formData.password
+      },{
+        withCredentials:true
+      })
+      navigate('/')
+    } catch (err) {
+      console.log(err);
+      alert('Registration Failed !!!')
+    }
   };
 
   return (
