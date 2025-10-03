@@ -7,11 +7,6 @@ const ThemeManager = ({ children }) => {
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // You can add a function to toggle the theme
-  // const toggleTheme = () => {
-  //   setTheme(theme === 'light' ? 'dark' : 'light');
-  // };
-
   return <>{children}</>;
 };
 

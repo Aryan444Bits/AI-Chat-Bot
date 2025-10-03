@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FiMenu, FiPlus, FiSend } from 'react-icons/fi';
+import { FiMenu } from 'react-icons/fi';
+import Sidebar from '../components/sidebar/Sidebar';
+import ChatHeader from '../components/chat/ChatHeader';
+import ChatMessages from '../components/chat/ChatMessages';
+import ChatInput from '../components/chat/ChatInput';
 import '../styles/theme.css';
 import '../styles/Home.css';
 
@@ -7,14 +11,14 @@ const Home = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [previousChats, setPreviousChats] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'dark');
     // TODO: Fetch previous chats from the backend API
     setPreviousChats(['Edushala website search', 'App aur website integration', 'Resume formatting update']);
-    // TODO: Fetch initial messages for the current chat or a welcome message
-    setMessages([{ text: "Hey! How's it going?", sender: 'ai' }]);
+    // start with no messages so the intro screen is visible
   }, []);
 
   const handleSendMessage = (e) => {
@@ -22,13 +26,19 @@ const Home = () => {
     if (userInput.trim() === '') return;
 
     const userMessage = { text: userInput, sender: 'user' };
-    setMessages([...messages, userMessage]);
+    // append the user message reliably
+    setMessages((prev) => [...prev, userMessage]);
+
+    // show typing indicator while waiting for AI reply
+    setIsTyping(true);
 
     // TODO: Send user input to the backend API and get the AI response
+    // simulate network/processing delay
     setTimeout(() => {
       const aiMessage = { text: `Echo: ${userInput}`, sender: 'ai' };
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
-    }, 500);
+      setIsTyping(false);
+    }, 800);
 
     setUserInput('');
   };
@@ -36,55 +46,40 @@ const Home = () => {
   const handleNewChat = () => {
     // TODO: Call an API to create a new chat session
     // Reset messages and set a new chat ID if applicable
-    setMessages([{ text: "Hey! How's it going?", sender: 'ai' }]);
+    setMessages([]);
     setUserInput('');
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
     <div className="home-container">
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">
-          <h3>ChatGPT</h3>
-          <div className="sidebar-new-chat" onClick={handleNewChat}>
-            <FiPlus />
-            <span>New Chat</span>
-          </div>
-        </div>
-        <FiMenu className="sidebar-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <h2>Chats</h2>
-        <ul>
-          {/* TODO: When a previous chat is clicked, fetch its messages from the API */}
-          {previousChats.map((chat, index) => (
-            <li key={index}>{chat}</li>
-          ))}
-        </ul>
-      </aside>
+      <Sidebar
+        previousChats={previousChats}
+        onNewChat={handleNewChat}
+        isSidebarOpen={isSidebarOpen}
+      />
+      <FiMenu className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar" />
       <main className={`chat-container ${!isSidebarOpen ? 'full-width' : ''}`}>
-        <header className="chat-header">
-          <FiMenu className="menu-icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-          <h3>ChatGPT</h3>
-        </header>
-        <div className="chat-messages">
-          {messages.map((message, index) => (
-            <div key={index} className={`message ${message.sender}`}>
-              <div className="message-avatar">{message.sender === 'ai' ? 'AI' : 'U'}</div>
-              <div className="text">{message.text}</div>
+        <ChatHeader onToggleSidebar={toggleSidebar} />
+          {/* Intro overlay: visible when there are no messages and input is empty */}
+          {(messages.length === 0 && userInput.trim() === '') && (
+            <div className="intro-overlay" role="region" aria-label="Welcome">
+              <div className="intro-card">
+                <h1 className="intro-title">ChaGpt Clone</h1>
+                <p className="intro-subtitle">A lightweight, responsive AI chat experience — clean, fast, and privacy-friendly.</p>
+                <p className="intro-hint">Start typing below to begin your conversation</p>
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="chat-input-container">
-          <form className="chat-input" onSubmit={handleSendMessage}>
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Ask anything..."
-            />
-            <button type="submit">
-              <FiSend />
-            </button>
-          </form>
-        </div>
+          )}
+        <ChatMessages messages={messages} typing={isTyping} />
+        <ChatInput
+          userInput={userInput}
+          onUserInput={(e) => setUserInput(e.target.value)}
+          onSendMessage={handleSendMessage}
+        />
       </main>
     </div>
   );
