@@ -13,10 +13,15 @@ const Home = () => {
   const [previousChats, setPreviousChats] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedChatIndex, setSelectedChatIndex] = useState(null);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', 'dark');
     // TODO: Fetch previous chats from the backend API
+    // Example integration point (add here):
+    // - GET /api/chats -> returns [{ id, title, lastMessage, createdAt }, ...]
+    // - On success: setPreviousChats(response.data)
+    // Note: switch from storing plain strings to storing objects like { id, title }
     setPreviousChats(['Edushala website search', 'App aur website integration', 'Resume formatting update']);
     // start with no messages so the intro screen is visible
   }, []);
@@ -33,7 +38,12 @@ const Home = () => {
     setIsTyping(true);
 
     // TODO: Send user input to the backend API and get the AI response
-    // simulate network/processing delay
+    // Example integration point (add here):
+    // - POST /api/chats/:chatId/messages with body { text }
+    //   or POST /api/messages with { chatId, text }
+    // - Backend returns the AI reply and/or stores the message
+    // - On success: append AI message to state and setIsTyping(false)
+    // For now we simulate network/processing delay
     setTimeout(() => {
       const aiMessage = { text: `Echo: ${userInput}`, sender: 'ai' };
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
@@ -44,9 +54,27 @@ const Home = () => {
   };
 
   const handleNewChat = () => {
-    // TODO: Call an API to create a new chat session
-    // Reset messages and set a new chat ID if applicable
+    // Ask the user for a chat name, then create it locally (or call API)
+    // Example integration point (add here):
+    // - POST /api/chats with body { title }
+    // - Backend returns created chat { id, title }
+    // - On success: prepend returned chat to previousChats and set selected chat id/index
+    const name = window.prompt('Enter a name for the new chat');
+    if (name === null) return; // user cancelled
+    const title = name.trim() === '' ? `New Chat ${new Date().toLocaleTimeString()}` : name.trim();
+    setPreviousChats((prev) => [title, ...prev]);
+    setSelectedChatIndex(0);
     setMessages([]);
+    setUserInput('');
+  };
+
+  const handleSelectChat = (index) => {
+    setSelectedChatIndex(index);
+    // In a real app: fetch messages for the chat id. For now clear messages to show intro
+    setMessages([]);
+    // Example integration point (add here):
+    // - If you store chats as objects with id: GET /api/chats/:chatId/messages
+    // - On success: setMessages(response.data.messages)
     setUserInput('');
   };
 
@@ -59,6 +87,8 @@ const Home = () => {
       <Sidebar
         previousChats={previousChats}
         onNewChat={handleNewChat}
+        onSelectChat={handleSelectChat}
+        selectedIndex={selectedChatIndex}
         isSidebarOpen={isSidebarOpen}
       />
       <FiMenu className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar" />

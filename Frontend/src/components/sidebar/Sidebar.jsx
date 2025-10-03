@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiPlus } from 'react-icons/fi';
 
-const Sidebar = ({ previousChats, onNewChat, isSidebarOpen }) => {
+const Sidebar = ({ previousChats, onNewChat, isSidebarOpen, onSelectChat, selectedIndex }) => {
     return (
         <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
             <div className="sidebar-header">
@@ -13,9 +13,25 @@ const Sidebar = ({ previousChats, onNewChat, isSidebarOpen }) => {
             </div>
             <h2>Chats</h2>
             <ul>
-                {/* TODO: When a previous chat is clicked, fetch its messages from the API */}
+                {/* When a previous chat is clicked, call onSelectChat to load it */}
+                {/* NOTE: When you switch to a backend API you should store chats as objects
+                (e.g. {id, title, lastMessage}) instead of plain strings.
+                Example integration when mapping:
+                    previousChats.map(chat => (
+                <li key={chat.id} onClick={() => onSelectChat(chat.id)}>
+                    {chat.title}
+                </li>
+                ))
+                Keep selectedIndex or selectedId in parent to show active state. */}
+
                 {previousChats.map((chat, index) => (
-                    <li key={index}>{chat}</li>
+                    <li
+                        key={index}
+                        className={selectedIndex === index ? 'active' : ''}
+                        onClick={() => onSelectChat && onSelectChat(index)}
+                    >
+                        {chat}
+                    </li>
                 ))}
             </ul>
         </aside>
