@@ -7,6 +7,8 @@ const router = express();
 
 router.post('/',authMiddleware.authUser,chatController.createChat)
 
+router.get('/',authMiddleware.authUser,chatController.getChats)
+
 
 
 
