@@ -58,6 +58,11 @@ export const chatAPI = {
     const response = await api.get('/api/chat');
     return response.data;
   },
+
+  getMessages: async (chatId) => {
+    const response = await api.get(`/api/chat/messages/${chatId}`);
+    return response.data;
+  },
 };
 
 // Socket connection for real-time messaging

@@ -1,20 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { socketService } from '../services/api';
+import { socketService, chatAPI } from '../services/api';
 import '../styles/ChatScreen.css';
 
 const ChatScreen = ({ chat }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     // Reset messages when chat changes
     setMessages([]);
+    setIsLoadingMessages(false);
     
     if (chat) {
-      // You could fetch chat messages here if you have an endpoint
-      // For now, we'll start with empty messages for each chat
+      // Fetch chat messages from backend
+      const fetchMessages = async () => {
+        try {
+          setIsLoadingMessages(true);
+          const response = await chatAPI.getMessages(chat._id);
+          if (response.messages) {
+            // Transform backend messages to frontend format
+            const transformedMessages = response.messages.map(msg => ({
+              content: msg.content,
+              role: msg.role,
+              timestamp: new Date(msg.createdAt),
+            }));
+            // Reverse to show oldest first (backend returns newest first)
+            setMessages(transformedMessages.reverse());
+          }
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+        } finally {
+          setIsLoadingMessages(false);
+        }
+      };
+      fetchMessages();
     }
   }, [chat]);
 
@@ -69,7 +91,7 @@ const ChatScreen = ({ chat }) => {
     }
   };
 
-  if (!chat || messages.length === 0) {
+  if (!chat || (chat && messages.length === 0 && !isLoadingMessages)) {
     return (
       <div className="chat-screen">
         <div className="welcome-screen">
