@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/form.css';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -22,20 +22,19 @@ const Register = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-                  const response = await axios.post('http://localhost:3000/api/auth/register', {
+      const response = await authAPI.register({
         email: formData.email,
-        fullName: {
-          firstName: formData.firstname,
-          lastName: formData.lastname,
-        },
+        firstName: formData.firstname,
+        lastName: formData.lastname,
         password: formData.password
-      },{
-        withCredentials:true
-      })
-      navigate('/')
+      });
+      console.log('Registration successful:', response);
+      navigate('/login');
     } catch (err) {
-      console.log(err);
-      alert('Registration Failed !!!')
+      console.error('Registration failed:', err);
+      alert('Registration Failed! Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -83,7 +82,9 @@ const Register = () => {
             onChange={handleChange}
           />
         </div>
-        <button type="submit" className="form-button">Register</button>
+        <button type="submit" className="form-button" disabled={submitting}>
+          {submitting ? 'Registering...' : 'Register'}
+        </button>
         <p className="form-footer">
           Already have an account ? <Link to="/login">Login</Link>
         </p>

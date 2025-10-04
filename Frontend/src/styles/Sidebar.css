@@ -14,21 +14,34 @@
 
 .sidebar-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
   padding: 10px;
   border-bottom: 1px solid #333;
 }
 
-.new-chat-btn {
+.new-chat-btn, .logout-btn {
   background-color: #343541;
   color: white;
   border: 1px solid #555;
   border-radius: 5px;
   padding: 10px;
   cursor: pointer;
-  flex-grow: 1;
-  margin-right: 10px;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.new-chat-btn:hover, .logout-btn:hover {
+  background-color: #444654;
+}
+
+.logout-btn {
+  background-color: #d73027;
+  border-color: #d73027;
+}
+
+.logout-btn:hover {
+  background-color: #b71c1c;
 }
 
 .chat-history {
@@ -40,10 +53,32 @@
   padding: 15px;
   cursor: pointer;
   border-bottom: 1px solid #333;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .chat-item:hover {
   background-color: #343541;
+}
+
+.chat-item.active {
+  background-color: #0084ff;
+  border-left: 4px solid #ffffff;
+  color: white;
+  font-weight: 500;
+}
+
+.chat-item.active:hover {
+  background-color: #0066cc;
+}
+
+.active-indicator {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  margin-left: 8px;
 }
 
 @media (max-width: 768px) {

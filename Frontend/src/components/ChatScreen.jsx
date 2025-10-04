@@ -1,13 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { socketService } from '../services/api';
 import '../styles/ChatScreen.css';
 
 const ChatScreen = ({ chat }) => {
-  const [messages, setMessages] = useState(chat ? chat.messages : []);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    setMessages(chat ? chat.messages : []);
+    // Reset messages when chat changes
+    setMessages([]);
+    
+    if (chat) {
+      // You could fetch chat messages here if you have an endpoint
+      // For now, we'll start with empty messages for each chat
+    }
+  }, [chat]);
+
+  useEffect(() => {
+    // Set up socket listener for AI responses
+    const handleAIResponse = (response) => {
+      if (response.chat === chat?._id) {
+        setMessages(prev => [
+          ...prev,
+          {
+            content: response.content,
+            role: 'model',
+            timestamp: new Date(),
+          }
+        ]);
+        setIsLoading(false);
+      }
+    };
+
+    socketService.onMessage(handleAIResponse);
+
+    return () => {
+      socketService.offMessage(handleAIResponse);
+    };
   }, [chat]);
 
   const scrollToBottom = () => {
@@ -18,23 +49,22 @@ const ChatScreen = ({ chat }) => {
     scrollToBottom();
   }, [messages]);
 
-  // If there's no initial chat, but we have messages, it means a new chat has started.
-  const isNewChat = !chat && messages.length > 0;
-
   const handleSend = (e) => {
     e.preventDefault();
-    if (input.trim()) {
-      const newMessages = [...messages, { sender: 'user', text: input }];
-      setMessages(newMessages);
+    if (input.trim() && chat) {
+      // Add user message to local state
+      const userMessage = {
+        content: input.trim(),
+        role: 'user',
+        timestamp: new Date(),
+      };
       
-      // TODO: Add your API call here to get the AI response
-      // You can use fetch() or axios to send the 'input' to your backend
-      // and then update the messages with the response.
+      setMessages(prev => [...prev, userMessage]);
+      setIsLoading(true);
       
-      // Simulate AI response
-      setTimeout(() => {
-        setMessages([...newMessages, { sender: 'ai', text: `Echo: ${input}` }]);
-      }, 500);
+      // Send message via socket
+      socketService.sendMessage(chat._id, input.trim());
+      
       setInput('');
     }
   };
@@ -45,34 +75,67 @@ const ChatScreen = ({ chat }) => {
         <div className="welcome-screen">
           <h1>ChaGpt Clone</h1>
           <p>A lightweight, responsive AI chat experience — clean, fast, and privacy-friendly.</p>
-          <p>Start typing below to begin your conversation</p>
+          {!chat ? (
+            <p>Select a chat or create a new one to start your conversation</p>
+          ) : (
+            <p>Start typing below to begin your conversation</p>
+          )}
         </div>
-        <div className="chat-input">
-          <form onSubmit={handleSend}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask anything..."
-            />
-            <button type="submit">➢</button>
-          </form>
-        </div>
+        {chat && (
+          <div className="chat-input">
+            <form onSubmit={handleSend}>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask anything..."
+                disabled={isLoading}
+              />
+              <button type="submit" disabled={isLoading || !input.trim()}>
+                {isLoading ? '...' : '➢'}
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="chat-screen">
+      <div className="chat-header">
+        <h3>{chat.title}</h3>
+      </div>
       <div className="chat-messages">
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.sender}`}>
+          <div key={index} className={`message ${message.role}`}>
             <div className="message-bubble">
-              <span className="sender-icon">{message.sender === 'user' ? 'U' : 'AI'}</span>
-              {message.text}
+              <span className="sender-icon">
+                {message.role === 'user' ? 'U' : 'AI'}
+              </span>
+              <div className="message-content">
+                {message.content}
+              </div>
+              <div className="message-time">
+                {message.timestamp && new Date(message.timestamp).toLocaleTimeString()}
+              </div>
             </div>
           </div>
         ))}
+        {isLoading && (
+          <div className="message model">
+            <div className="message-bubble">
+              <span className="sender-icon">AI</span>
+              <div className="message-content typing">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       <div className="chat-input">
@@ -82,8 +145,11 @@ const ChatScreen = ({ chat }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything..."
+            disabled={isLoading}
           />
-          <button type="submit">➢</button>
+          <button type="submit" disabled={isLoading || !input.trim()}>
+            {isLoading ? '...' : '➢'}
+          </button>
         </form>
       </div>
     </div>
